@@ -1,0 +1,68 @@
+__author__ = 'desire.aheza'
+courses = {
+    'feb2012': { 'cs101': {'name': 'Building a Search Engine',
+                           'teacher': 'Dave',
+                           'assistant': 'Peter C.'},
+                 'cs373': {'name': 'Programming a Robotic Car',
+                           'teacher': 'Sebastian',
+                           'assistant': 'Andy'}},
+    'apr2012': { 'cs101': {'name': 'Building a Search Engine',
+                           'teacher': 'Dave',
+                           'assistant': 'Sarah'},
+                 'cs212': {'name': 'The Design of Computer Programs',
+                           'teacher': 'Peter N.',
+                           'assistant': 'Andy',
+                           'prereq': 'cs101'},
+                 'cs253': {'name': 'Web Application Engineering - Building a Blog',
+                           'teacher': 'Steve',
+                           'prereq': 'cs101'},
+                 'cs262': {'name': 'Programming Languages - Building a Web Browser',
+                           'teacher': 'Wes',
+                           'assistant': 'Peter C.',
+                           'prereq': 'cs101'},
+                 'cs373': {'name': 'Programming a Robotic Car',
+                           'teacher': 'Sebastian'},
+                 'cs387': {'name': 'Applied Cryptography',
+                           'teacher': 'Dave'}},
+    'jan2044': { 'cs001': {'name': 'Building a Quantum Holodeck',
+                           'teacher': 'Dorina'},
+                        'cs003': {'name': 'Programming a Robotic Robotics Teacher',
+                           'teacher': 'Jasper'},
+                     }
+    }
+def course_offered(courses,hexamester):
+    res=[]
+    if hexamester in courses:
+        for c in courses[hexamester]:
+            res.append(c)
+        return res
+    print ("hexamester "+str(hexamester)+" not found")
+    return
+def is_offered(courses,course, hexamester):
+    val=course_offered(courses,hexamester)
+    if val:
+        if course in val :
+            return True
+        return False
+    return
+def when_offered(courses, course):
+    res=[]
+    for k in courses:
+        if course in courses[k]:
+            res.append(k)
+    return res
+def is_involved(courses,person):
+    data={}
+    for k in courses:
+        for cs in courses[k]:
+          for i in courses[k][cs]:
+              if courses[k][cs][i]==person:
+                  #print (courses[k][cs][i])
+                  if(k not in data):
+                      data[k]=[cs]
+                    #  print (data)
+                  else:
+                      data[k].append(cs)
+    return data
+print (is_involved(courses, 'Dorina'))
+#print (is_offered(courses, 'cs101', 'apr2011'))
