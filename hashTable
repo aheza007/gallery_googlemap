@@ -1,0 +1,66 @@
+
+__author__ = 'desire.aheza'
+import urllib.request
+#create bucket number
+def getHash(keyword, numOfBuckets):
+    keywordInNumber=0
+    for i in keyword:
+        keywordInNumber=(keywordInNumber+ord(i))%numOfBuckets
+    return keywordInNumber
+#get page
+def get_page(url):
+    try:
+       return str(urllib.request.urlopen(url).read())
+    except:
+       return ""
+    #cre
+#fi
+def testHash(func,words,size):
+    result=[0]*size
+    used_keyword=[]
+    #print (words)
+    for word in words:
+        if word not in used_keyword:
+            hashValue=func(word,size)
+            result[hashValue]+=1
+            used_keyword.append(word)
+    return result
+#make empty hashtable
+def make_Hashtable(size):
+    result=[]
+    for unused in range(0,size):
+        result.append([])
+    return result
+def hashtable_get_bucket(hashatable,keyword):
+    return hashatable[getHash(keyword,len(hashatable))]
+#print (testHash(getHash,(get_page('http://www.gutenberg.org/cache/epub/1661/pg1661.txt')).split(),100))
+#add key to the hashtable
+def hashtable_add(htable,key,value):
+    if not hashtable_get_bucket(htable,key):
+        htable.append([key,value])
+    else:
+        hastable_update(htable,key,value)
+def union(li1,li2):
+    for item in li2:
+        if item not in li1:
+            li1.append(item)
+def hastable_update(htable,key,value):
+    val=hasttable_lookup(htable,key)
+    if val:
+        union(val,value)
+    else:
+        val.append([key,value])
+def hasttable_lookup(htable,key):
+    for item in hashtable_get_bucket(htable,key):
+        if item[0]==key:
+            return item[1]
+    return None
+table=make_Hashtable(3)
+hashtable_add(table,'udacity',23)
+print (table)
+hashtable_add(table,'audacity',17)
+hashtable_add(table,'budacity',33)
+hashtable_add(table,'ueedacity',23)
+hashtable_add(table,'udacity',299)
+print (table)
+print (hashtable_get_bucket(table,'udacity'))
