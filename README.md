@@ -1,1 +1,1 @@
-# gallery_googlemap
+# simple search engine
