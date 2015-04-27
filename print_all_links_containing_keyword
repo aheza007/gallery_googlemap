@@ -1,0 +1,134 @@
+import urllib.request
+import re
+#page= '<div><h1>Example Domain</h1> <p>This domain is established to be used for illustrative examples in documents. You may use this domain in e<a href="http://www.ianaNew1.org/domaidsns/example">xamples without prior coordination<a href="http://www.iana1.org/domaidsns/example"> or asking for permission.</p> <p><a href="http://www.iana.org/domains/example">More<a href="http://www.iana3.org/domains/example"> information.on<a href="http://www.iana4.org/domaidsns/example"> or asking for p.on<a href="http://www.iana5.org/domaidsns/example"> or asking for p.</a></p>'
+#page=open('links_to_extract.txt','r').read()
+def geturl(page):
+    print(page)
+    start_cote = page.find('<a href="http:')
+    print(start_cote)
+    if(start_cote ==-1):
+        return None, 0
+    start_url = page.find('"', start_cote)
+    end_url = page.find('"', start_url+1)
+    url = page[start_url+1:end_url]
+    return url, end_url
+def get_all_links(page):
+    all_links=[]
+    while True:
+        url, end_quote = geturl(page)
+        if url:
+            all_links.append(url)
+           # print(url)
+            page = page[end_quote:]
+        else:
+            break
+    return all_links
+#print(get_all_links(page))
+def get_page(url):
+    try:
+       return str(urllib.request.urlopen(url).read())
+    except:
+       return ""
+def crawl_web(startseed, max_depth):
+    tocrawl = [startseed]
+    crawled = []
+    next_depth = []
+    depth = 0
+    index={}
+    graph={}
+    while tocrawl and depth <= max_depth:
+        seed = tocrawl.pop()
+        if(seed not in crawled):
+            content=get_page(seed)
+            add_page_to_index(index,seed,content)
+            outLinks=get_all_links(content)
+            graph[seed]=outLinks
+            for link in outLinks:
+                if(link not in next_depth):
+                    next_depth.append(link)
+            crawled.append(seed)
+        #below code can be edited to remove the depth
+        #print("lenght crawled"+str(depth))
+        if(not tocrawl):
+            tocrawl, next_depth=next_depth, []
+            depth += 1
+        if(len(crawled)==100):
+            break
+    #above code can be edited to remove the crawling depth
+    return index,graph
+#add index or url to list of url corresponding to a keyword
+def add_to_index(index,keyword,url):
+    if keyword in index:
+        if url in index[keyword]:
+            return
+        index[keyword].append([url,0])
+    #not found add a new entry
+    index[keyword]=[url,0]
+#add page lanking using how many clicks on a url
+def record_user_click(index,keyword,url):
+    urls=lookup(keyword,index)
+    print (urls)
+    for entry in urls:
+        if (entry[0]==url):
+            entry[1]+=1
+#seach based on keyword and index
+def lookup(keyword,index):
+    if keyword in index:
+        return index[keyword]
+    return None
+#split based on list of separator
+def split_string(source,splitlist):
+    output=[]
+    at_split=True
+    for char in source:
+        if(char in splitlist):
+            at_split=True
+        else:
+            #create a new word if we need to split but not on the char that is not a separator
+            if(at_split):
+                output.append(char)
+                at_split=False
+            else:
+                #add character to last word
+                output[-1]=output[-1]+char
+    return output
+#out = split_string("This is a test-of the,string separation-code!"," ,!-")
+#print (out)
+#add pages to index
+def add_page_to_index(index,url,page):
+    words=split_string(page," ,!-")
+    for word in words:
+        add_to_index(index,word,url)
+#list_of_all_links=crawl_web('https://docs.python.org/2/howto/webservers.html',1000)
+#for link in list_of_all_links:
+#    print (link)
+
+#add_page_to_index(index,'https://en.wikipedia.org/wiki/Main_Page',"Tylopilus felleus is a fungus of the bolete family. Its distribution includes east Asia, northern Europe,and eastern North America, extending south into Mexico and Central America. A mycorrhizal species, it grows in deciduous and coniferous woodland, often fruiting under beech and oak. Its fruit bodies (mushrooms)have convex or flat caps that are shades of brown, buff, or tan, and typically measure up to 15 cm (6 in) in diameter. The pore surface is initially white before turning pinkish with age")
+#add_page_to_index(index,'http://news.yahoo.com/mayweather-pacquiao-begin-countdown-big-fight-214659725--spt.html',"Mayweather had the math right, though he declined to say just how much he will make in the May 2 fight that has stirred excitement far beyond the boxing community. He will get 60 percent of the purse in what is expected to be boxing's richest fight ever, a haul that could exceed $120 million for Mayweather alone. Pacquiao won't do badly, either, in a fight that was five years in the making and will break records in another way — it will cost fans more than any other fight in history to watch both at the MGM Grand arena or in the comfort of their living rooms.")
+#compute page_ranks
+def computer_ranks(graph):
+    d=0.8#damping factor
+    numloops=10
+    ranks={}
+    npages=len(graph)
+    for page in graph:
+        ranks[page]=1.0/npages
+    for i in range(0,numloops):
+        newranks={}
+        for page in graph:
+            newrank=(1-d)/npages
+
+            for key in graph:
+                if page in graph[key]:
+                    newrank+=d*ranks[key]/len(graph[key])
+            newranks[page]=newrank
+        ranks=newranks
+    return ranks
+index,graph=crawl_web('https://www.udacity.com/cs101x/urank/index.html',5)
+ranks=computer_ranks(graph)
+print (ranks)
+print ("graph content:")
+print(index)
+#print (graph['http://udacity.com/cs101x/urank/arsenic.html'])
+
+#print(lookup('Mayweather',index))
